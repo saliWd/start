@@ -336,10 +336,11 @@ function deleteUser (object $dbConn, int $userid): bool {
 // returns the userid integer from the session variable
 function getUserid (): int {
   if (isset($_SESSION)) {
-    return (int)$_SESSION['userid'];
-  } else {
-    return 0;  // rather return 0 (means userid is not valid) than false
+	  if (isset($_SESSION['userid'])) {
+    	return (int)$_SESSION['userid'];
+	  }
   }
+  return 0;  // rather return 0 (means userid is not valid) than false
 }
 
 // returns a 'safe' integer. Return value is 0 if the checks did not work out
