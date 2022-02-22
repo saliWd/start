@@ -188,7 +188,7 @@
   }
   
   function addOrEditLink(object $dbConn, int $userid, int $categorySafe, int $idSafe, string $textUnsafe, string $linkUnsafe): bool {
-    if (!(filter_var($linkUnsafe, FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED))) { // have a validUrl, require the http(s)://-part as well
+    if (!(filter_var($linkUnsafe, FILTER_VALIDATE_URL))) { // have a validUrl, require the http(s)://-part as well
       printConfirm($dbConn, getLanguage($dbConn,43), getLanguage($dbConn,44));
       return $error($dbConn, 160203); 
     }
