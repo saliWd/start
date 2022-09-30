@@ -143,6 +143,10 @@
   
   // prints some graph with the user statistics 
   function printUserStat (object $dbConn, int $doSafe): void {
+    // TODO currently not maintained. 
+    return;
+
+
     $currentTime = time();
     $externalYear = safeIntFromExt('GET', 'externalYear', 4); // 4 digit year from a link
     $year = date('Y', $currentTime); // default: use current year
@@ -470,7 +474,7 @@
   if ($doSafe == 0) { // valid use case. Entry point of this site
     printStartOfHtml($dbConn);
     printTitle($dbConn);
-    printLogin($dbConn, false);
+    printLogin($dbConn, false);    
     printUserStat($dbConn, $doSafe);
   } elseif ($doSafe == 1) { // log out
     $userid = getUserid();

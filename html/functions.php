@@ -122,8 +122,10 @@ function printStartOfHtml (object $dbConn): void {
   $userid = getUserid();  
   printNavMenu($dbConn, $userid, $siteSafe);  
   if ($userid == 2) { overlayDiv(false, 3, getLanguage($dbConn,105).' &nbsp;<a href="index.php?do=2#newUser" style="background-color:transparent; color:#000; text-decoration:underline;">'.getLanguage($dbConn,32).'</a>'); }  
-  printOverlayAccountVerify($dbConn, $userid);  
-  echo '<div class="section categories noBottom"><div class="container">';
+  printOverlayAccountVerify($dbConn, $userid);
+  $readabilityImproveClass = '';
+  if ($siteSafe === 'index.php') { $readabilityImproveClass = ' containerUnderlay'; }
+  echo '<div class="section categories noBottom"><div class="container'.$readabilityImproveClass.'">';
 }
  
 // function does not return anything. Prints the footer at the end of a page. Output depends on the page we are at and whether the user is logged in  
@@ -207,12 +209,12 @@ function printOverlayAccountVerify ($dbConn, int $userid): void {
 function getCurrentSite (): string {  
   $siteUnsafe = substr($_SERVER['SCRIPT_NAME'],7); // SERVER[...] is something like /start/links.php (without any parameters)   
   if (
-      ($siteUnsafe == 'about.php') or
-      ($siteUnsafe == 'admin.php') or
-      ($siteUnsafe == 'edit.php') or      
-      ($siteUnsafe == 'index.php') or 
-      ($siteUnsafe == 'link.php') or
-      ($siteUnsafe == 'links.php')
+      ($siteUnsafe === 'about.php') or
+      ($siteUnsafe === 'admin.php') or
+      ($siteUnsafe === 'edit.php') or      
+      ($siteUnsafe === 'index.php') or 
+      ($siteUnsafe === 'link.php') or
+      ($siteUnsafe === 'links.php')
      ) {
         return $siteUnsafe;
       }

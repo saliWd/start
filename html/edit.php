@@ -13,6 +13,10 @@
     }                
     echo '</div>
     <div class="row twelve columns"><hr></div>';
+    if (!($result = $dbConn->query('SELECT * FROM `user` WHERE `id` = "'.$userid.'"'))) {
+      return;
+    }
+    $row = $result->fetch_assoc(); // guaranteed to get only one row
     echo '
     <h3 class="section-heading"><span class="bgCol">Email / '.getLanguage($dbConn,84).'</span></h3>
     <form action="edit.php?do=8" method="post">        
@@ -40,12 +44,7 @@
       <div class="six columns"><span class="bgCol">Deutsch:</span><a href="edit.php?ln=de">&nbsp;DE&nbsp;</a></div>
     </div>
     <div class="row twelve columns"><hr /></div>
-    ';
-        
-    if (!($result = $dbConn->query('SELECT * FROM `user` WHERE `id` = "'.$userid.'"'))) {
-      return;
-    }
-    $row = $result->fetch_assoc(); // guaranteed to get only one row    
+    ';       
     
     $styles = explode('/', $row['style']);
     $notSelBg = 'border: 2px dotted #000;';        
