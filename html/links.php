@@ -11,7 +11,7 @@
     // Have 12 columns. Means with modulo 3, I have 'class four columns' and vice versa
     $modulo = 3;
     $divClass = '<div class="halbeReihe four columns linktext">';
-    if ($category == 2) { // this category prints more dense
+    if ($category === 2 or $category === 3) { // this category prints more dense
       $modulo = 4;
       $divClass = '<div class="halbeReihe three columns linktext">';
     }
