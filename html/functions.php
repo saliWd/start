@@ -24,7 +24,7 @@
 // 39 - makeSafeStr ($unsafe, int $length): string
 // 40 - redirectRelative (string $page): void
 // 41 - printStatic ($dbConn): void
-// 42 - printInlineCss ($dbConn): void   
+// 42 - NA 
 // 43 - getLanguage ($dbConn, int $textId): string // NB: ln and id variables are safe
 // 44 - updateUser ($dbConn, int $userid, bool $forgotPw): bool  
 // 45 - safeIntFromExt (string $source, string $varName, int $length): int
@@ -37,7 +37,7 @@
   
 // this function is called on every (user related) page on the very start  
 // it does the session start and opens connection to the data base. Returns the dbConn variable or a boolean
-function initialize ():mysqli {
+function initialize (): mysqli {
   session_start(); // this code must precede any HTML output
   
   $siteSafe = getCurrentSite();
@@ -50,7 +50,7 @@ function initialize ():mysqli {
         if ($siteSafe == 'links.php') { // redirect to index
           redirectRelative(page: 'index.php');
           // this code is not reached because redirect does an exit
-        }        
+        }
         printErrorAndDie(heading: 'Login error', text: 'You might want to go to <a href="index.php">the start page</a>');
       }
     }
@@ -64,7 +64,7 @@ function printConfirm (object $dbConn, string $heading, string $text): void {
   if (!headers_sent()) {
     printStartOfHtml($dbConn);
   } // headers
-  echo '<div class="row twelve columns textBox"><h4>'.$heading.'</h4><p>'.$text.'</p></div>';
+  echo "<div class=\"row twelve columns textBox\"><h4>$heading</h4><p>$text</p></div>";
 } 
 
 // prints a valid html error page and stops php execution
@@ -79,9 +79,8 @@ function printErrorAndDie (string $heading, string $text): void {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="css/font.css" type="text/css" />
   <link rel="stylesheet" href="css/normalize.css" type="text/css" />
-  <link rel="stylesheet" href="css/skeleton.css" type="text/css" />';
-  printInlineCss((object)'');
-  echo '</head><body><div class="row twelve columns textBox"><h4>'.$heading.'</h4><p>'.$text.'</p></div></body></html>';
+  <link rel="stylesheet" href="css/skeleton.css" type="text/css" />';  
+  echo "</head><body><div class=\"row twelve columns textBox\"><h4>$heading</h4><p>$text</p></div></body></html>";
   die();  
 }
 
@@ -363,7 +362,7 @@ function makeSafeHex ($unsafe, int $length): string {
 
 // returns a 'safe' string. Not that much to do though for a string
 function makeSafeStr ($unsafe, int $length): string {
-  return (htmlentities(substr($unsafe, 0, $length))); // length-limited variable, HTML encoded
+  return htmlentities(substr($unsafe, 0, $length)); // length-limited variable, HTML encoded
 }
 
 // does a (relative) redirect
@@ -392,7 +391,7 @@ function printStatic (object $dbConn, string $siteSafe): void {
   $title = $siteDescriptions[$siteSafe][0];
   $description = $siteDescriptions[$siteSafe][1];  
   
-  $url = 'https://widmedia.ch/start/'.$siteSafe;
+  $url = "https://widmedia.ch/start/$siteSafe";
 
   echo '
 <!DOCTYPE html>
@@ -421,46 +420,23 @@ function printStatic (object $dbConn, string $siteSafe): void {
   <link rel="stylesheet" href="css/font.css" type="text/css" />
   <link rel="stylesheet" href="css/normalize.css" type="text/css" />
   <link rel="stylesheet" href="css/skeleton.css" type="text/css" />';
-  printInlineCss($dbConn);
-  
-  echo '
-  <script>  
-  function overlayMsgFade() {  // fades out a message and does a display: none when it is fully faded out
-    element = document.getElementById("overlay");
-    var op = 0.8;  // initial opacity
-    var timer = setInterval(function () {
-      if (op <= 0.3){
-          clearInterval(timer);
-          element.style.display = "none";
-      }
-      element.style.opacity = op;
-      element.style.filter = "alpha(opacity=" + op * 100 + ")";
-      op -= op * 0.05;
-    }, 200);
-  }
-  </script>
-  </head>';    
-}
-
-// defines all the styles with color in it. NB: borders are defined with the 1px solid #color shortcut in the skeleton css. Color attribute is then overwritten here
-function printInlineCss (object $dbConn): void {  
+  // inline CSS
+  // defines all the styles with color in it. NB: borders are defined with the 1px solid #color shortcut in the skeleton css. Color attribute is then overwritten here
   $userid = getUserid();
   
-  $txtLight = 'rgba('.getStyle($dbConn, $userid, 'txtLight').')'; // yellowish (works good on blue, works on gray as well) = #faff3b;
-  $txtDark =  'rgba('.getStyle($dbConn, $userid, 'txtDark').')'; // darker version of above settings  
-  
-  $bg_norm  = 'rgba('.getStyle($dbConn, $userid, 'bgNorm').')'; // default blueish
-  $bg_norm2 = 'rgba('.getStyle($dbConn, $userid, 'bgNorm2').')'; // same color, different transparency for navMenu
-  $bg_diff  = 'rgba('.getStyle($dbConn, $userid, 'bgDiff').')'; // default reddish 
-  $bg_diff2 = 'rgba('.getStyle($dbConn, $userid, 'bgDiff2').')'; // same color, different transparency for overlay and borders  
-  
-  $bgImg = getStyle($dbConn, $userid, 'bgImg');
-  $brightness = getStyle($dbConn, $userid, 'brightness');
+  $txtLight = 'rgba('.getStyle(dbConn: $dbConn, userid: $userid, item: 'txtLight').')'; // yellowish (works good on blue, works on gray as well) = #faff3b;
+  $txtDark  = 'rgba('.getStyle(dbConn: $dbConn, userid: $userid, item: 'txtDark').')'; // darker version of above settings  
+  $bg_norm  = 'rgba('.getStyle(dbConn: $dbConn, userid: $userid, item: 'bgNorm').')'; // default blueish
+  $bg_norm2 = 'rgba('.getStyle(dbConn: $dbConn, userid: $userid, item: 'bgNorm2').')'; // same color, different transparency for navMenu
+  $bg_diff  = 'rgba('.getStyle(dbConn: $dbConn, userid: $userid, item: 'bgDiff').')'; // default reddish 
+  $bg_diff2 = 'rgba('.getStyle(dbConn: $dbConn, userid: $userid, item: 'bgDiff2').')'; // same color, different transparency for overlay and borders  
+  $bgImg    = getStyle(dbConn: $dbConn, userid: $userid, item: 'bgImg');
+  $bright   = getStyle(dbConn: $dbConn, userid: $userid, item: 'brightness');
     
   echo '
   <style>
     body { color: '.$txtLight.'; background-image: url("images/bg/'.$bgImg.'");}
-    .brightness { background-color: rgba('.$brightness.'); }
+    .brightness { background-color: rgba('.$bright.'); }
     .button,
     button,
     input[type="submit"],
@@ -485,8 +461,25 @@ function printInlineCss (object $dbConn): void {
     .menuCurrentPage { color: '.$txtDark.'; }
     #menuToggle input:checked ~ span { background: '.$txtLight.'; }
     .bgCol { background-color: '.$bg_norm.'; }
-  </style>';
+  </style>  
+  <script>  
+  function overlayMsgFade() {  // fades out a message and does a display: none when it is fully faded out
+    element = document.getElementById("overlay");
+    var op = 0.8;  // initial opacity
+    var timer = setInterval(function () {
+      if (op <= 0.3){
+          clearInterval(timer);
+          element.style.display = "none";
+      }
+      element.style.opacity = op;
+      element.style.filter = "alpha(opacity=" + op * 100 + ")";
+      op -= op * 0.05;
+    }, 200);
+  }
+  </script>
+  </head>';    
 }
+
 
 // returns various text in the session-stored language. language-db organized as follows: id(int_11) / en(text) / de(text)
 // $description is usually not required, it serves as a code help to know what's returned
@@ -524,7 +517,7 @@ function updateUser (object $dbConn, int $userid, bool $forgotPw): bool {
   }
   $pwHash = password_hash($passwordUnsafe, PASSWORD_DEFAULT);
   
-  // TODO: quiet ugly statements...
+  // TODO: quite ugly statements...
   $emailOk = false;
   if (!$forgotPw) {
     $emailUnsafe = filter_var(safeStrFromExt('POST','email', 127), FILTER_SANITIZE_EMAIL);
@@ -560,11 +553,11 @@ function updateUser (object $dbConn, int $userid, bool $forgotPw): bool {
 
 // checks whether a get/post/cookie variable exists and makes it safe if it does. If not, returns 0
 function safeIntFromExt (string $source, string $varName, int $length): int {
-  if (($source === 'GET') and (isset($_GET[$varName]))) {
+  if (($source === 'GET') and isset($_GET[$varName])) {
     return makeSafeInt($_GET[$varName], $length);    
-  } elseif (($source === 'POST') and (isset($_POST[$varName]))) {
+  } elseif (($source === 'POST') and isset($_POST[$varName])) {
     return makeSafeInt($_POST[$varName], $length);    
-  } elseif (($source === 'COOKIE') and (isset($_COOKIE[$varName]))) {
+  } elseif (($source === 'COOKIE') and isset($_COOKIE[$varName])) {
     return makeSafeInt($_COOKIE[$varName], $length);  
   } else {
     return 0;
@@ -573,11 +566,11 @@ function safeIntFromExt (string $source, string $varName, int $length): int {
 
 // same as int above...
 function safeHexFromExt (string $source, string $varName, int $length): string {
- if (($source === 'GET') and (isset($_GET[$varName]))) {
+ if (($source === 'GET') and isset($_GET[$varName])) {
     return makeSafeHex($_GET[$varName], $length);
-  } elseif (($source === 'POST') and (isset($_POST[$varName]))) {
+  } elseif (($source === 'POST') and isset($_POST[$varName])) {
     return makeSafeHex($_POST[$varName], $length);
-  } elseif (($source === 'COOKIE') and (isset($_COOKIE[$varName]))) {
+  } elseif (($source === 'COOKIE') and isset($_COOKIE[$varName])) {
     return makeSafeHex($_COOKIE[$varName], $length);
   } else {
     return '0';
@@ -586,11 +579,11 @@ function safeHexFromExt (string $source, string $varName, int $length): string {
 
 // same as hex above...
 function safeStrFromExt (string $source, string $varName, int $length): string {
- if (($source === 'GET') and (isset($_GET[$varName]))) {
+ if (($source === 'GET') and isset($_GET[$varName])) {
     return makeSafeStr($_GET[$varName], $length);
-  } elseif (($source === 'POST') and (isset($_POST[$varName]))) {
+  } elseif (($source === 'POST') and isset($_POST[$varName])) {
     return makeSafeStr($_POST[$varName], $length);
-  } elseif (($source === 'COOKIE') and (isset($_COOKIE[$varName]))) {
+  } elseif (($source === 'COOKIE') and isset($_COOKIE[$varName])) {
     return makeSafeStr($_COOKIE[$varName], $length);
   } else {
     return '';
@@ -647,8 +640,8 @@ function styleDefTxt(int $subStyle, string $item): string {
 
 // returns the image name matching the style number
 function styleDefBgImg(int $subStyle): string {
-  //               0          1          2             3            4           5           6            7        
-  $styles = array('ice.webp','ice.webp','bamboo.webp','water.webp','pigs.webp','monk.webp','stone.webp','smoke.webp');
+  //          0          1          2             3            4           5           6            7        
+  $styles = ['ice.webp','ice.webp','bamboo.webp','water.webp','pigs.webp','monk.webp','stone.webp','smoke.webp'];
   return $styles[$subStyle];
 }
 // returns the brightness of the background-overlay. May be more dark or more bright.
@@ -665,6 +658,6 @@ function styleDefBri(int $subStyle): string {
       $color = 255;
       $intensity = ($subStyle - 50) * 0.02;
     }
-    return $color.','.$color.','.$color.','.$intensity;
+    return "$color,$color,$color,$intensity";
   }
 }
