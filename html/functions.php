@@ -11,7 +11,7 @@
 // 26 - printStartOfHtml ($dbConn): void
 // 27 - printFooter ($dbConn): void
 // 28 - overlayDiv (bool $disappearing, int $zIndex, string $text): void
-// 29 - printOverlayGeneric ($dbConn, int $messageNumber): void    
+// 29 - NA    
 // 30 - printOverlayAccountVerify ($dbConn, int $userid): void
 // 31 - getCurrentSite ()
 // 32 - printNavMenu ($dbConn): void
@@ -108,8 +108,9 @@ function printStartOfHtml (object $dbConn): void {
   $msgSafe = safeIntFromExt('GET', 'msg', 1);
   
   if ($msgSafe > 0) {
-    echo '<body onLoad="overlayMsgFade();">'; 
-    printOverlayGeneric($dbConn, $msgSafe); 
+    echo '<body onLoad="overlayMsgFade();">';
+    $message = (($msgSafe >= 1) and ($msgSafe <= 7)) ? getLanguage(dbConn: $dbConn,textId: $msgSafe+18): getLanguage(dbConn: $dbConn,textId: 26);
+    overlayDiv(disappearing: true, zIndex: 2, text: $message);
   } else {
     echo '<body>';
   }
@@ -175,16 +176,6 @@ function overlayDiv (bool $disappearing, int $zIndex, string $text): void {
   echo '<div '.$divId.'class="overlayMessage" style="z-index: '.$zIndex.';">'.$text.'</div>';  
 }
 
-// prints some disappearing message box. used on links.php and index.php
-function printOverlayGeneric ($dbConn, int $messageNumber): void {    
-  if (($messageNumber >= 1) and ($messageNumber <= 7)) { 
-    $message = getLanguage($dbConn,($messageNumber+18)); 
-  } else { 
-    $message = getLanguage($dbConn,26); 
-  }  
-  overlayDiv(true, 2, $message);  
-}  
-
 // prints a message when the email of this account has not been verified (I'm not checking whether I actually get a result. Just diplaying the message if 'verified' is 0)
 function printOverlayAccountVerify ($dbConn, int $userid): void {
   if ($userid === 0) { // user is not logged in
@@ -219,7 +210,7 @@ function getCurrentSite (): string {
 // prints the navigation menu on top left corner. Output depends on current_site and wheter one is logged in or not
 // does set the language session variable as well
 function printNavMenu (object $dbConn, int $userid, string $siteSafe): void {   
-  $notLoggedIn = ($userid == 0);
+  $notLoggedIn = $userid == 0;
   
   if (isset($_GET['ln'])) { // this means the user is changing the language. This has precedence over whatever    
     $getLnSafe = safeStrFromExt('GET','ln', 2);
@@ -254,36 +245,33 @@ function printNavMenu (object $dbConn, int $userid, string $siteSafe): void {
   
   if ($notLoggedIn) { // remove the link, replace it with a strikethrough for those site where a login is a must
     $strikeThrough = ' style="text-decoration: line-through;"';
-    $links = '<li'.$strikeThrough.'>Links</li>';
-    $edit  = '<li'.$strikeThrough.'>'.getLanguage($dbConn,27).'</li>';
+    $links = "<li$strikeThrough>Links</li>";
+    $edit  = "<li$strikeThrough>".getLanguage($dbConn,27).'</li>';
   } 
-  if ($notLoggedIn) { $logOut = ''; } else { $logOut = '<li><a href="index.php?do=1">log out</a></li>'; }
+  $logOut = $notLoggedIn ? '': '<li><a href="index.php?do=1">log out</a></li>';
     
-  if(isset($_GET['do'])) { // don't want to present the language sel on pages which are not default pages, where form entries are processed or similar
-    $languageSelection = ''; 
-  } else {    
-    $languageSelection = '<li>&nbsp;</li><li style="font-size:smaller"><a href="'.$siteSafe.'?ln=de">&nbsp;DE</a>&nbsp;&nbsp;&nbsp;<a href="'.$siteSafe.'?ln=en">EN&nbsp;</a></li>';
-  }
+  // don't want to present the language sel on pages which are not default pages, where form entries are processed or similar
+  $languageSelection = isset($_GET['do']) ? '': '<li>&nbsp;</li><li style="font-size:smaller"><a href="'.$siteSafe.'?ln=de">&nbsp;DE</a>&nbsp;&nbsp;&nbsp;<a href="'.$siteSafe.'?ln=en">EN&nbsp;</a></li>';
   
-  echo '
-  <nav style="width:400px">
-    <div id="menuToggle">
-      <input type="checkbox">
+  echo "
+  <nav style=\"width:400px\">
+    <div id=\"menuToggle\">
+      <input type=\"checkbox\">
       <span></span>
       <span></span>
       <span></span>
-      <ul id="menu">
-        '.$home.'
-        '.$login.'
-        '.$newAcc.'
-        '.$about.'
-        '.$links.'
-        '.$edit.'
-        '.$logOut.'
-        '.$languageSelection.'
+      <ul id=\"menu\">
+        $home
+        $login
+        $newAcc
+        $about
+        $links
+        $edit
+        $logOut
+        $languageSelection
       </ul>
     </div>
-  </nav>';
+  </nav>";
 }
 
 // checks whether userid is not 2 (= not test user)
@@ -554,11 +542,11 @@ function updateUser (object $dbConn, int $userid, bool $forgotPw): bool {
 // checks whether a get/post/cookie variable exists and makes it safe if it does. If not, returns 0
 function safeIntFromExt (string $source, string $varName, int $length): int {
   if (($source === 'GET') and isset($_GET[$varName])) {
-    return makeSafeInt($_GET[$varName], $length);    
+    return makeSafeInt(unsafe: $_GET[$varName], length: $length);    
   } elseif (($source === 'POST') and isset($_POST[$varName])) {
-    return makeSafeInt($_POST[$varName], $length);    
+    return makeSafeInt(unsafe: $_POST[$varName], length: $length);    
   } elseif (($source === 'COOKIE') and isset($_COOKIE[$varName])) {
-    return makeSafeInt($_COOKIE[$varName], $length);  
+    return makeSafeInt(unsafe: $_COOKIE[$varName], length: $length);  
   } else {
     return 0;
   }
@@ -567,11 +555,11 @@ function safeIntFromExt (string $source, string $varName, int $length): int {
 // same as int above...
 function safeHexFromExt (string $source, string $varName, int $length): string {
  if (($source === 'GET') and isset($_GET[$varName])) {
-    return makeSafeHex($_GET[$varName], $length);
+    return makeSafeHex(unsafe: $_GET[$varName], length: $length);
   } elseif (($source === 'POST') and isset($_POST[$varName])) {
-    return makeSafeHex($_POST[$varName], $length);
+    return makeSafeHex(unsafe: $_POST[$varName], length: $length);
   } elseif (($source === 'COOKIE') and isset($_COOKIE[$varName])) {
-    return makeSafeHex($_COOKIE[$varName], $length);
+    return makeSafeHex(unsafe: $_COOKIE[$varName], length: $length);
   } else {
     return '0';
   }
@@ -580,11 +568,11 @@ function safeHexFromExt (string $source, string $varName, int $length): string {
 // same as hex above...
 function safeStrFromExt (string $source, string $varName, int $length): string {
  if (($source === 'GET') and isset($_GET[$varName])) {
-    return makeSafeStr($_GET[$varName], $length);
+    return makeSafeStr(unsafe: $_GET[$varName], length: $length);
   } elseif (($source === 'POST') and isset($_POST[$varName])) {
-    return makeSafeStr($_POST[$varName], $length);
+    return makeSafeStr(unsafe: $_POST[$varName], length: $length);
   } elseif (($source === 'COOKIE') and isset($_COOKIE[$varName])) {
-    return makeSafeStr($_COOKIE[$varName], $length);
+    return makeSafeStr(unsafe: $_COOKIE[$varName], length: $length);
   } else {
     return '';
   }
@@ -595,25 +583,23 @@ function getStyle(object $dbConn, int $userid, string $item): string {
   if (isset($_SESSION['style'])) {
     $style = $_SESSION['style'];
   } else {
-    $style = '0'.rand(1,7).'/00/00'; // default value, also for all non-logged in users
+    $style = '0'.rand(min: 1,max: 7).'/00/00'; // default value, also for all non-logged in users
     $_SESSION['style'] = $style; // store it for this session. Otherwise every new site needs to load a new bgImg
   }
   
   if ($userid > 0) { // logged in users, overrides the session info
-    if ($result = $dbConn->query('SELECT `style` FROM `user` WHERE `id` = "'.$userid.'"')) {
+    if ($result = $dbConn->query("SELECT `style` FROM `user` WHERE `id` = \"$userid\"")) {
       $row = $result->fetch_row();
       $style = $row[0];
     }
   }
-  $styles = explode('/', $style); // style is divided into 3 pieces (img-bri-txt = 00/00/00), two digit numbers, divided by /
+  $styles = explode(separator: '/', string: $style); // style is divided into 3 pieces (img-bri-txt = 00/00/00), two digit numbers, divided by /
   
-  if ($item == 'bgImg') {
-    return styleDefBgImg((int)$styles[0]);
-  } elseif ($item == 'brightness') {
-    return styleDefBri((int)$styles[1]);  
-  } else {
-    return styleDefTxt((int)$styles[2], $item);
-  }
+  return match ($item) {
+    'bgImg'      => styleDefBgImg(subStyle: (int)$styles[0]),
+    'brightness' => styleDefBri(subStyle: (int)$styles[1]),
+    default      => styleDefTxt(subStyle: (int)$styles[2], item: $item)
+  };
 }
 
 // input: a style id (number from 1 to x, 0 is valid as well), output: a color string
@@ -627,13 +613,13 @@ function styleDefTxt(int $subStyle, string $item): string {
   $txtDark  = '182,189,  0, 0.85';  
     
   $styles = // two dimensional array. First dimension is working with keys, second one with index.
-    array(// 0 = undefined, same as 1          2                  3                  4                
-      'bgNorm'   => array($bgNorm,  $bgNorm,  '117, 89,217,0.60','191,23,37,0.40',  '0,  0,  0,0.50'),
-      'bgNorm2'  => array($bgNorm2, $bgNorm2, '117, 89,217,0.80','191,23,37,0.80',  '0,  0,  0,0.80'),
-      'bgDiff'   => array($bgDiff,  $bgDiff,  '210,242,141,0.50',' 0, 0, 0,0.30',   '71,95,36,0.60'),
-      'bgDiff2'  => array($bgDiff2, $bgDiff2, '210,242,141,0.60',' 0, 0, 0,0.60',   '71,95,36,0.80'),
-      'txtLight' => array($txtLight,$txtLight,'240,240,240,0.85','240,222,134,0.85','250,232,148,0.90'),
-      'txtDark'  => array($txtDark ,$txtDark ,'180,180,180,0.85','174,158,81,0.85' ,'174,158,81,0.85')
+    array(// 0 = undef, same as 1         2                  3                  4                
+      'bgNorm'   => [$bgNorm,  $bgNorm,  '117, 89,217,0.60','191,23,37,0.40',  '0,  0,  0,0.50'],
+      'bgNorm2'  => [$bgNorm2, $bgNorm2, '117, 89,217,0.80','191,23,37,0.80',  '0,  0,  0,0.80'],
+      'bgDiff'   => [$bgDiff,  $bgDiff,  '210,242,141,0.50',' 0, 0, 0,0.30',   '71,95,36,0.60'],
+      'bgDiff2'  => [$bgDiff2, $bgDiff2, '210,242,141,0.60',' 0, 0, 0,0.60',   '71,95,36,0.80'],
+      'txtLight' => [$txtLight,$txtLight,'240,240,240,0.85','240,222,134,0.85','250,232,148,0.90'],
+      'txtDark'  => [$txtDark ,$txtDark ,'180,180,180,0.85','174,158,81,0.85' ,'174,158,81,0.85']
     );
   return $styles[$item][$subStyle];
 }
