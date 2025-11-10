@@ -24,8 +24,7 @@
     
   $idSafe = safeIntFromExt(source: 'GET', varName: 'id', length: 11); 
   $userid = getUserid();
-  if ($idSafe > 0) { // do nothing is file is called without id param
-    if (!(linkAndUpdateDb(dbConn: $dbConn, idSafe: $idSafe, userid: $userid))) {
-      printErrorAndDie('Error in file link.php','Something related to the data base went wrong... well, that doesn\'t help that much, does it?<br>But you might still want to inform me (sali@widmedia.ch) or just try again later.');
-    }
+  
+  if (!(linkAndUpdateDb(dbConn:$dbConn, idSafe: $idSafe, userid: $userid))) {
+    printErrorAndDie(heading:'Error in file link.php',text:'Something related to the data base went wrong... well, that doesn\'t help that much, does it?<br>But you might still want to inform me (sali@widmedia.ch) or just try again later.');
   }

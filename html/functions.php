@@ -49,13 +49,18 @@ function initialize (): mysqli {
         // - session is really destroyed (e.g. user logged out). In this case, print an error message
         if ($siteSafe == 'links.php') { // redirect to index
           redirectRelative(page: 'index.php');
-          // this code is not reached because redirect does an exit
-        }
+          die();  // this code is not reached because redirect does an exit but it's anyhow cleaner like this
+        } 
         printErrorAndDie(heading: 'Login error', text: 'You might want to go to <a href="index.php">the start page</a>');
       }
     }
+  }  
+  require_once 'php/getDbVars.php';
+  $dbConn = new mysqli(hostname: 'localhost', username: getDbVar_0(), password: getDbVar_1(), database: "widmedia", port: 3306);
+  if ($dbConn->connect_error) {
+    printErrorAndDie(heading: 'Connection to the data base failed', text: 'Please try again later and/or send me an email: sali@widmedia.ch');
   }
-  require_once 'php/dbConn.php'; // this will return the $dbConn variable as 'new mysqli'    
+  $dbConn->set_charset(charset:'utf8');
   return $dbConn;
 }
 
