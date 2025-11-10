@@ -37,7 +37,7 @@
   
 // this function is called on every (user related) page on the very start  
 // it does the session start and opens connection to the data base. Returns the dbConn variable or a boolean
-function initialize () {
+function initialize (): mysqli {
   session_start(); // this code must precede any HTML output
   
   $siteSafe = getCurrentSite();   
@@ -48,18 +48,19 @@ function initialize () {
         // - user is connecting directly to links.php from where-ever (common case as you might store the links-page as bookmark). If so, just redirect to index.php
         // - session is really destroyed (e.g. user logged out). In this case, print an error message
         if ($siteSafe == 'links.php') { // redirect to index
-          redirectRelative('index.php');
-          return false;  // this code is not reached because redirect does an exit but it's anyhow cleaner like this
-        }        
-        printErrorAndDie('Login error', 'You might want to go to <a href="index.php">the start page</a>');
+          redirectRelative(page: 'index.php');
+          die();  // this code is not reached because redirect does an exit but it's anyhow cleaner like this
+        } 
+        printErrorAndDie(heading: 'Login error', text: 'You might want to go to <a href="index.php">the start page</a>');
       }
     }
   }  
-  require_once('php/dbConn.php'); // this will return the $dbConn variable as 'new mysqli'
+  require_once 'php/getDbVars.php';
+  $dbConn = new mysqli(hostname: 'localhost', username: getDbVar_0(), password: getDbVar_1(), database: "widmedia", port: 3306);
   if ($dbConn->connect_error) {
-    printErrorAndDie('Connection to the data base failed', 'Please try again later and/or send me an email: sali@widmedia.ch');
+    printErrorAndDie(heading: 'Connection to the data base failed', text: 'Please try again later and/or send me an email: sali@widmedia.ch');
   }
-  $dbConn->set_charset('utf8');
+  $dbConn->set_charset(charset:'utf8');
   return $dbConn;
 }
 
